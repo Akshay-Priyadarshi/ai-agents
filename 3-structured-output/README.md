@@ -1,86 +1,126 @@
-# Email Agent
+# Structured Outputs in ADK
 
-The `email_agent` is a Google ADK-powered agent designed to generate professional emails with a structured subject and body. It ensures that the emails are well-formatted, professional, and tailored to the user's request.
+This example demonstrates how to implement structured outputs in the Agent Development Kit (ADK) using Pydantic models. The main agent in this example, `email_generator`, uses the `output_schema` parameter to ensure its responses conform to a specific structured format.
 
-## Features
+## What are Structured Outputs?
 
-- **Concise and Relevant Subject Line**: Automatically creates a descriptive subject.
-- **Well-Structured Email Body**: Generates emails with a professional greeting, clear content, appropriate closing, and a signature.
-- **Tone Matching**: Adapts the email tone to match the purpose (e.g., formal for business, friendly for colleagues).
+ADK allows you to define structured data formats for agent inputs and outputs using Pydantic models:
 
-## How it Works
+1. **Controlled Output Format**: Using `output_schema` ensures the LLM produces responses in a consistent JSON structure
+2. **Data Validation**: Pydantic validates that all required fields are present and correctly formatted
+3. **Improved Downstream Processing**: Structured outputs are easier to handle in downstream applications or by other agents
 
-The agent uses the `gemini-2.0-flash` model and a defined `EmailContent` output schema to ensure the generated email always has a `subject` and `body`.
+Use structured outputs when you need guaranteed format consistency for integration with other systems or agents.
+
+## Email Generator Example
+
+In this example, we've created an email generator agent that produces structured output with:
+
+1. **Email Subject**: A concise, relevant subject line
+2. **Email Body**: Well-formatted email content with greeting, paragraphs, and signature
+
+The agent uses a Pydantic model called `EmailContent` to define this structure, ensuring every response follows the same format.
+
+### Output Schema Definition
+
+The Pydantic model defines exactly what fields are required and includes descriptions for each:
+
+```python
+class EmailContent(BaseModel):
+    """Schema for email content with subject and body."""
+
+    subject: str = Field(
+        description="The subject line of the email. Should be concise and descriptive."
+    )
+    body: str = Field(
+        description="The main content of the email. Should be well-formatted with proper greeting, paragraphs, and signature."
+    )
+```
+
+### How It Works
+
+1. The user provides a description of the email they need
+2. The LLM agent processes this request and generates both a subject and body
+3. The agent formats its response as a JSON object matching the `EmailContent` schema
+4. ADK validates the response against the schema before returning it
+5. The structured output is stored in the session state under the specified `output_key`
+
+## Important Limitations
+
+When using `output_schema`:
+
+1. **No Tool Usage**: Agents with an output schema cannot use tools during their execution
+2. **Direct JSON Response**: The LLM must produce a JSON response matching the schema as its final output
+3. **Clear Instructions**: The agent's instructions must explicitly guide the LLM to produce properly formatted JSON
+
+## Project Structure
+
+```
+4-structured-outputs/
+│
+├── email_agent/                   # Email Generator Agent package
+│   └── agent.py                   # Agent definition with output schema
+│
+└── README.md                      # This documentation
+```
 
 ## Getting Started
 
-Follow these steps to set up and run the `email_agent`.
+### Setup
 
-### Prerequisites
-
-- UV (Python package manager)
-- Python >= 3.13
-
-### 1. Set up Environment & Install ADK
-
-It's recommended to create and activate a virtual environment:
+1. Activate the virtual environment from the root directory:
 
 ```bash
-# Create a virtual environment
-uv venv
-
-# Activate the virtual environment (macOS/Linux)
-source .venv/bin/activate
+# macOS/Linux:
+source ../.venv/bin/activate
+# Windows CMD:
+..\.venv\Scripts\activate.bat
+# Windows PowerShell:
+..\.venv\Scripts\Activate.ps1
 ```
 
-### 2. Set up the Model (API Key)
+2. Create a `.env` file and add your Google API key:
 
-Your agent needs authentication credentials to make calls to the Large Language Model (LLM).
-
-1.  **Get an API key from Google AI Studio.**
-2.  Create a `.env` file in the `3-structured-output/email_agent/` directory (if it doesn't exist) and add your API key:
-
-    ```
-    GOOGLE_GENAI_USE_VERTEXAI=FALSE
-    GOOGLE_API_KEY=YOUR_ACTUAL_API_KEY_HERE
-    ```
-
-    Replace `YOUR_ACTUAL_API_KEY_HERE` with your actual Google AI Studio API key.
-
-### 3. Run Your Agent
-
-Navigate to the `3-structured-output` directory in your terminal:
-
-```bash
-cd 3-structured-output
+```
+GOOGLE_API_KEY=your_api_key_here
 ```
 
-There are two primary ways to run your agent:
-
-#### a) Dev UI (Recommended for Development)
-
-This launches an interactive, browser-based developer UI.
+### Running the Example
 
 ```bash
+cd 4-structured-outputs
 adk web
 ```
 
-Open the URL provided (usually `http://localhost:8000` or `http://127.0.0.1:8000`) in your browser. In the top-left corner, select `email_agent` from the dropdown. You can then chat with your agent using the textbox.
+Then select "email_generator" from the dropdown menu in the web UI.
 
-#### b) Terminal (CLI)
+## Example Interactions
 
-You can also interact with your agent directly in the terminal.
-
-```bash
-adk run email_agent
-```
-
-To exit, use `Ctrl+C`.
-
-### Example Prompt
-
-Once the agent is running (either via `adk web` or `adk run`), you can try the following prompt:
+Try these example prompts:
 
 ```
-user>> Draft a professional email to a potential client introducing our new product features.
+Write a professional email to my team about the upcoming project deadline that has been extended by two weeks.
 ```
+
+```
+Draft an email to a client explaining that we need additional information before we can proceed with their order.
+```
+
+```
+Create an email to schedule a meeting with the marketing department to discuss the new product launch strategy.
+```
+
+## Key Concepts: Structured Data Exchange
+
+Structured outputs are part of ADK's broader support for structured data exchange, which includes:
+
+1. **input_schema**: Define expected input format (not used in this example)
+2. **output_schema**: Define required output format (used in this example)
+3. **output_key**: Store the result in session state for use by other agents (used in this example)
+
+This pattern enables reliable data passing between agents and integration with external systems that expect consistent data formats.
+
+## Additional Resources
+
+- [ADK Structured Data Documentation](https://google.github.io/adk-docs/agents/llm-agents/#structuring-data-input_schema-output_schema-output_key)
+- [Pydantic Documentation](https://docs.pydantic.dev/latest/)
