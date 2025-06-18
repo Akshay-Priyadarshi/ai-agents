@@ -4,7 +4,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from google.adk.runners import Runner
 from google.adk.sessions import DatabaseSessionService
-from reminder_agent import memory_agent
+from reminder_agent import reminder_agent
 from utils import call_agent_async
 
 load_dotenv()
@@ -55,7 +55,7 @@ async def main_async():
     # ===== PART 4: Agent Runner Setup =====
     # Create a runner with the memory agent
     runner = Runner(
-        agent=memory_agent,
+        agent=reminder_agent,
         app_name=APP_NAME,
         session_service=session_service,
     )

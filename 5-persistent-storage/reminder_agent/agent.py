@@ -268,8 +268,8 @@ def mark_reminder_done(index: int, tool_context: ToolContext) -> dict:
 
 
 # Create a simple persistent agent
-memory_agent = Agent(
-    name="memory_agent",
+reminder_agent = Agent(
+    name="reminder_agent",
     model="gemini-2.0-flash",
     description="A smart reminder agent with persistent memory",
     instruction="""
